@@ -7,22 +7,46 @@
 //
 
 #import "ViewController.h"
+#import "CollectionViewCell.h"
+#import "NetworkManager.h"
+#import "Photo.h"
 
-@interface ViewController ()
-
+@interface ViewController () <UICollectionViewDataSource>
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
+@property (nonatomic, strong) NSArray<Photo*> *objects;
+@property (nonatomic, strong) NSMutableArray *imageLinkArray;
+@property (nonatomic, strong) NSMutableArray<UIImage*> *imageArray;
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    [NetworkManager getImages:^(NSArray *images) {
+        self.objects = images;
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self.collectionView reloadData];
+        }];
+    }];
+    NSLog(@"Method finished");
 }
 
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+
+#pragma mark - DataSource
+
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return self.objects.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    CollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
+    [cell setPhoto:self.objects[indexPath.row]];
+    return cell;
 }
 
 
